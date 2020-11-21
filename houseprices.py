@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense
 
+# File laden
 df = pd.read_csv('houseprices/data.csv')
 
 dataset = df.values
