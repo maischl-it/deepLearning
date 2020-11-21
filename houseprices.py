@@ -9,9 +9,9 @@ df = pd.read_csv('houseprices/data.csv')
 
 dataset = df.values
 
-x = dataset[:, 0:10]
+x = dataset[:, 0:4]
 
-Y = dataset[:, 10]
+Y = dataset[:, 4]
 
 min_max_scaler = preprocessing.MinMaxScaler()
 
@@ -24,9 +24,9 @@ X_val, X_test, Y_val, Y_test = train_test_split(
     X_val_and_test, Y_val_and_test, test_size=0.5)
 
 model = Sequential([
-    Dense(32, activation='relu', input_shape=(10,)),
-    Dense(32, activation='relu'),
-    Dense(32, activation='sigmoid'),
+    Dense(1, activation='relu', input_shape=(4,)),
+    Dense(1, activation='relu'),
+    Dense(1, activation='sigmoid'),
 ])
 
 model.compile(optimizer='adam',
@@ -55,12 +55,12 @@ plt.xlabel('Epoch')
 plt.legend(['Train', 'Val'], loc='lower right')
 plt.show()
 
-result = model.predict(X_train)
+result = model.predict(X_test)
 
 sumCorrect = 0
 
 for i in range(0, len(result)):
-    yResult = Y_train[i]
+    yResult = Y_test[i]
     yRounded = round(result[i][0])
     yExact = result[i][0]
     #print("Y-Result: {} --- Rounded-Prediction-Result: {} --- Exact-Prediction-Result: {}".format(yResult, yRounded, yExact))
