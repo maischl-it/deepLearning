@@ -9,9 +9,17 @@ from keras.layers import Dense
 
 # File mit Testdaten
 df = pd.read_csv('houseprices.csv')
+# df = pd.read_csv('iris.csv')
 
 # Anzahl der X- und Y-Felder aus der jeweiligen CSV
+
+# Houseprices
 xCount = 10
+
+# # Iris
+# xCount = 4
+
+# Bei BinaryClassification ist die Anzahl der Outputs immer 1
 yCount = 1
 
 dataset = df.values
