@@ -1,56 +1,83 @@
-"""
-    A simple neural network written in Keras (TensorFlow backend) to classify the IRIS data
-"""
+#! /usr/bin/python3
 
-import numpy as np
-
-from sklearn.datasets import load_iris
+import pandas as pd
+from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
-
+import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.optimizers import Adam
+import numpy
 
-iris_data = load_iris()  # load the iris dataset
+# File mit Testdaten
+df = pd.read_csv('iris.csv')
 
-print('Example data: ')
-print(iris_data.data[:5])
-print('Example labels: ')
-print(iris_data.target[:5])
+# Anzahl der X- und Y-Felder aus der jeweiligen CSV
 
-x = iris_data.data
-y_ = iris_data.target.reshape(-1, 1)  # Convert data to a single column
+# # Iris
+xCount = 4
 
-# One Hot encode the class labels
+# Bei BinaryClassification ist die Anzahl der Outputs immer 1
+yCount = 1
+
+dataset = df.values
+
+x = dataset[:, 0:xCount]
+
+Y = dataset[:, xCount]
+
 encoder = OneHotEncoder(sparse=False)
-y = encoder.fit_transform(y_)
-# print(y)
+Y = encoder.fit_transform(Y.reshape(-1, 1))
 
-# Split the data for training and testing
-train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=0.20)
+min_max_scaler = preprocessing.MinMaxScaler()
 
-# Build the model
+X_scale = min_max_scaler.fit_transform(x)
 
-model = Sequential()
+X_train, X_val_and_test, Y_train, Y_val_and_test = train_test_split(
+    X_scale, Y, test_size=0.3)
 
-model.add(Dense(10, input_shape=(4,), activation='relu', name='fc1'))
-model.add(Dense(10, activation='relu', name='fc2'))
-model.add(Dense(3, activation='softmax', name='output'))
+X_val, X_test, Y_val, Y_test = train_test_split(
+    X_val_and_test, Y_val_and_test, test_size=0.5)
 
-# Adam optimizer with learning rate of 0.001
-optimizer = Adam(lr=0.001)
-model.compile(optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+model = Sequential([
+    Dense(10, activation='relu', input_shape=(xCount,)),
+    Dense(10, activation='relu'),
+    Dense(3, activation='softmax'),
+])
 
-print('Neural Network Model Summary: ')
-print(model.summary())
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
 
-# Train the model
-model.fit(train_x, train_y, verbose=2, batch_size=5, epochs=200)
+hist = model.fit(X_train,
+                 Y_train,
+                 batch_size=32,
+                 epochs=100,
+                 verbose=3,
+                 validation_data=(X_val, Y_val))
 
-# Test on unseen data
+model.evaluate(X_test, Y_test)
 
-results = model.evaluate(test_x, test_y)
+result = model.predict(X_test)
 
-print('Final test set loss: {:4f}'.format(results[0]))
-print('Final test set accuracy: {:4f}'.format(results[1]))
+sumCorrect = 0
+
+for i in range(0, len(result)):
+    yResult = Y_test[i]
+
+    yRounded = [round(result[i][0]), round(result[i][1]), round(result[i][2])]
+
+    if numpy.array_equal(yResult, yRounded):
+        sumCorrect = sumCorrect+1
+
+
+calculatedAccuracy = round(100/len(result)*sumCorrect, 2)
+
+print("Prozentualer Anteil an korrekten Predictions: ",
+      calculatedAccuracy, " %")
+
+outputFile = open("result.txt", "a")
+
+outputFile.write(str(calculatedAccuracy)+"\n")
+
+outputFile.close()
